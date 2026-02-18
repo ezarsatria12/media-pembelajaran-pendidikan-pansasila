@@ -10,13 +10,27 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:screenOrientation="landscape"
         android:theme="@style/Theme.MediaPembelajaranPendidikanPansasila"
         tools:targetApi="31">
+        <activity
+            android:name=".ui.screens.MainMenuScreen"
+            android:exported="false"
+            android:label="@string/title_activity_main_menu_screen"
+            android:theme="@style/Theme.MediaPembelajaranPendidikanPansasila" />
+        <activity
+            android:name=".FullscreenActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:exported="false"
+            android:label="@string/title_activity_fullscreen"
+            android:theme="@style/Theme.MediaPembelajaranPendidikanPansasila.Fullscreen" />
+        <activity
+            android:name=".MainMenuScreen"
+            android:exported="false" />
         <activity
             android:name=".MainActivity"
             android:exported="true"
             android:label="@string/app_name"
+            android:screenOrientation="landscape"
             android:theme="@style/Theme.MediaPembelajaranPendidikanPansasila">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
