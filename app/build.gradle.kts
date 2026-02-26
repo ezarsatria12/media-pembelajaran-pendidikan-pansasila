@@ -73,4 +73,5 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
     implementation("androidx.compose.material:material-icons-extended")
     implementation("androidx.navigation:navigation-compose:2.8.6")
+    implementation("com.github.DImuthuUpe:AndroidPdfViewer:3.0.0-beta.2")
 }

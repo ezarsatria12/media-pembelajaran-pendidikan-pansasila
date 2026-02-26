@@ -16,14 +16,16 @@ import androidx.core.view.WindowInsetsControllerCompat
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
+import com.fikri.mediapembelajaranpendidikanpansasila.ui.screens.DetailMateriScreen
 import com.fikri.mediapembelajaranpendidikanpansasila.ui.screens.MainMenuScreen
-import com.fikri.mediapembelajaranpendidikanpansasila.ui.screens.MateriScreen // Import MateriScreen
+import com.fikri.mediapembelajaranpendidikanpansasila.ui.screens.MateriScreen
 import com.fikri.mediapembelajaranpendidikanpansasila.ui.theme.MediaPembelajaranPendidikanPansasilaTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        hideSystemUI()
+        hideSystemUI() // Agar Fullscreen
         enableEdgeToEdge()
 
         setContent {
@@ -32,24 +34,45 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    // --- SETUP NAVIGASI DI SINI ---
                     val navController = rememberNavController()
 
                     NavHost(navController = navController, startDestination = "menu") {
 
-                        // 1. Rute Halaman Menu
+                        // 1. MENU UTAMA
                         composable("menu") {
                             MainMenuScreen(
-                                onNavigateToMateri = { navController.navigate("materi") }, // Pindah ke Materi
-                                onNavigateToQuiz = { /* Nanti dibuat */ },
-                                onNavigateToUjian = { /* Nanti dibuat */ }
+                                onNavigateToMateri = { navController.navigate("materi") },
+                                onNavigateToQuiz = { /* Nanti: navController.navigate("kuis") */ },
+                                onNavigateToUjian = { /* Nanti: navController.navigate("ujian") */ }
                             )
                         }
 
-                        // 2. Rute Halaman Materi
+                        // 2. DAFTAR MATERI (GRID)
                         composable("materi") {
                             MateriScreen(
-                                onBackClick = { navController.popBackStack() } // Kembali ke Menu
+                                onBackClick = { navController.popBackStack() },
+                                onMateriClick = { babId ->
+                                    // Saat kartu diklik, pindah ke detail bawa ID-nya (misal: "bab1")
+                                    navController.navigate("detail_materi/$babId")
+                                }
+                            )
+                        }
+
+                        // 3. DETAIL MATERI (PDF VIEWER)
+                        composable(
+                            route = "detail_materi/{babId}",
+                            // Kita terima argumen "babId" dari rute sebelumnya
+                        ) { backStackEntry ->
+                            val babId = backStackEntry.arguments?.getString("babId") ?: "bab1"
+
+                            // LOGIKA PENENTUAN FILE PDF
+                            // Jika babId="bab1", maka buka file "materi_bab1.pdf"
+                            // Pastikan kamu punya file 'materi_bab1.pdf' di folder assets!
+                            val namaFilePdf = "materi_$babId.pdf"
+
+                            DetailMateriScreen(
+                                namaFilePdf = namaFilePdf,
+                                onBackClick = { navController.popBackStack() }
                             )
                         }
                     }
@@ -58,6 +81,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    // Fungsi untuk menyembunyikan Status Bar (Fullscreen)
     private fun hideSystemUI() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             window.attributes.layoutInDisplayCutoutMode =
