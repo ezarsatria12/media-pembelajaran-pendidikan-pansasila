@@ -17,9 +17,12 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.fikri.mediapembelajaranpendidikanpansasila.ui.screens.SplashScreen
 import com.fikri.mediapembelajaranpendidikanpansasila.ui.screens.DetailMateriScreen
 import com.fikri.mediapembelajaranpendidikanpansasila.ui.screens.MainMenuScreen
 import com.fikri.mediapembelajaranpendidikanpansasila.ui.screens.MateriScreen
+import com.fikri.mediapembelajaranpendidikanpansasila.ui.screens.KuisScreen
+import com.fikri.mediapembelajaranpendidikanpansasila.ui.screens.MainKuisScreen
 import com.fikri.mediapembelajaranpendidikanpansasila.ui.theme.MediaPembelajaranPendidikanPansasilaTheme
 
 class MainActivity : ComponentActivity() {
@@ -36,13 +39,25 @@ class MainActivity : ComponentActivity() {
                 ) {
                     val navController = rememberNavController()
 
-                    NavHost(navController = navController, startDestination = "menu") {
+                    NavHost(navController = navController, startDestination = "splash") {
+
+                        composable("splash") {
+                            SplashScreen(
+                                onNavigateToMenu = {
+                                    // Pindah ke "menu", dan HAPUS "splash" dari riwayat
+                                    // agar kalau user tekan tombol back, tidak balik ke layar loading
+                                    navController.navigate("menu") {
+                                        popUpTo("splash") { inclusive = true }
+                                    }
+                                }
+                            )
+                        }
 
                         // 1. MENU UTAMA
                         composable("menu") {
                             MainMenuScreen(
                                 onNavigateToMateri = { navController.navigate("materi") },
-                                onNavigateToQuiz = { /* Nanti: navController.navigate("kuis") */ },
+                                onNavigateToQuiz = { navController.navigate("kuis") },
                                 onNavigateToUjian = { /* Nanti: navController.navigate("ujian") */ }
                             )
                         }
@@ -72,6 +87,26 @@ class MainActivity : ComponentActivity() {
 
                             DetailMateriScreen(
                                 namaFilePdf = namaFilePdf,
+                                onBackClick = { navController.popBackStack() }
+                            )
+                        }
+                        composable("kuis") {
+                            KuisScreen(
+                                onBackClick = { navController.popBackStack() },
+                                onKuisClick = { kuisId ->
+                                    // UBAH BAGIAN INI: Navigasi ke halaman game kuis bawa ID-nya
+                                    navController.navigate("main_kuis/$kuisId")
+                                }
+                            )
+                        }
+
+                        // --- 5. HALAMAN GAME KUIS (DRAG & DROP) ---
+                        composable("main_kuis/{kuisId}") { backStackEntry ->
+                            // Tangkap ID Kuis yang dikirim
+                            val kuisId = backStackEntry.arguments?.getString("kuisId") ?: ""
+
+                            MainKuisScreen(
+                                kuisId = kuisId,
                                 onBackClick = { navController.popBackStack() }
                             )
                         }
