@@ -51,7 +51,7 @@ fun MateriScreen(
     ) {
         // BACKGROUND
         Image(
-            painter = painterResource(id = R.drawable.bg_menu),
+            painter = painterResource(id = R.drawable.bg_materi),
             contentDescription = "Background Materi",
             contentScale = ContentScale.Crop,
             modifier = Modifier.fillMaxSize()

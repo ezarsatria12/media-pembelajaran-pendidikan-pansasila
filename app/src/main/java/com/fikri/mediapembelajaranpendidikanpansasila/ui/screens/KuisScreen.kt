@@ -18,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -25,38 +26,37 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.fikri.mediapembelajaranpendidikanpansasila.R
+import com.fikri.mediapembelajaranpendidikanpansasila.data.local.AppDatabase
+import com.fikri.mediapembelajaranpendidikanpansasila.data.local.QuizChapterEntity
 
-// --- 1. DATA KUIS (Sama seperti MateriBab) ---
-data class KuisBab(val id: String, val title: String, val description: String)
+// DATA HARDCODE SUDAH DIHAPUS, SEKARANG MURNI DARI DATABASE
 
-val daftarKuis = listOf(
-    KuisBab("kuis_bab1", "Latihan Bab 1", "Simbol Pancasila"),
-    KuisBab("kuis_bab2", "Latihan Bab 2", "Makna Sila Pertama"),
-    KuisBab("kuis_bab3", "Latihan Bab 3", "Makna Sila Kedua"),
-    KuisBab("kuis_bab4", "Latihan Bab 4", "Hidup Rukun"),
-    KuisBab("kuis_bab5", "Latihan Bab 5", "Gotong Royong")
-)
-
-// --- 2. LAYAR UTAMA (GRID) ---
 @Composable
 fun KuisScreen(
     onBackClick: () -> Unit,
-    onKuisClick: (String) -> Unit // Callback untuk navigasi ke permainan kuis
+    onKuisClick: (String) -> Unit
 ) {
+    val context = LocalContext.current
     var isMuted by remember { mutableStateOf(false) }
+
+    // --- 1. AMBIL MESIN DATABASE ---
+    val db = remember { AppDatabase.getDatabase(context) }
+    val kuisDao = remember { db.kuisDao() }
+
+    // --- 2. SEDOT DATA SECARA REAL-TIME ---
+    // collectAsState() akan mengubah Flow dari Room menjadi State yang dikenali oleh UI Compose
+    val daftarKuis by kuisDao.getAllActiveQuizChapters().collectAsState(initial = emptyList())
 
     Box(
         modifier = Modifier.fillMaxSize()
     ) {
-        // BACKGROUND
         Image(
-            painter = painterResource(id = R.drawable.bg_menu),
+            painter = painterResource(id = R.drawable.bg_kuis),
             contentDescription = "Background Kuis",
             contentScale = ContentScale.Crop,
             modifier = Modifier.fillMaxSize()
         )
 
-        // COLUMN (Header + Grid)
         Column(
             modifier = Modifier.fillMaxSize()
         ) {
@@ -68,14 +68,12 @@ fun KuisScreen(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // Tombol Kembali
                 UtilityButton(
                     icon = Icons.AutoMirrored.Filled.ArrowBack,
                     color = Color(0xFFF44336),
                     onClick = onBackClick
                 )
 
-                // Tombol Suara
                 UtilityButton(
                     icon = if (isMuted) Icons.Default.VolumeOff else Icons.Default.VolumeUp,
                     color = Color(0xFFE040FB),
@@ -95,27 +93,35 @@ fun KuisScreen(
             }
 
             // B. GRID CONTENT
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(2),
-                contentPadding = PaddingValues(start = 24.dp, end = 24.dp, bottom = 24.dp),
-                horizontalArrangement = Arrangement.spacedBy(20.dp),
-                verticalArrangement = Arrangement.spacedBy(20.dp),
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth()
-            ) {
-                items(daftarKuis) { bab ->
-                    KuisCardGrid(bab = bab, onClick = { onKuisClick(bab.id) })
+            if (daftarKuis.isEmpty()) {
+                // Tampilkan loading berputar jika data sedang dimuat dari memori internal
+                Box(modifier = Modifier.fillMaxSize().weight(1f), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator(color = Color.White)
+                }
+            } else {
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(2),
+                    contentPadding = PaddingValues(start = 24.dp, end = 24.dp, bottom = 24.dp),
+                    horizontalArrangement = Arrangement.spacedBy(20.dp),
+                    verticalArrangement = Arrangement.spacedBy(20.dp),
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth()
+                ) {
+                    // Masukkan daftarKuis yang diambil dari Database
+                    items(daftarKuis) { bab ->
+                        KuisCardGrid(bab = bab, onClick = { onKuisClick(bab.id) })
+                    }
                 }
             }
         }
     }
 }
 
-// --- 3. KOMPONEN KARTU GRID ---
+// --- 3. KOMPONEN KARTU ---
 @Composable
 fun KuisCardGrid(
-    bab: KuisBab,
+    bab: QuizChapterEntity, // Sekarang menerima entitas database langsung
     onClick: () -> Unit
 ) {
     Card(
@@ -128,14 +134,14 @@ fun KuisCardGrid(
             .clickable { onClick() }
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
-            // Bagian Gambar
             Box(
                 modifier = Modifier
                     .weight(0.65f)
                     .fillMaxWidth()
-                    .background(Color(0xFF2196F3)), // Biru ceria untuk Kuis
+                    .background(Color(0xFF2196F3)),
                 contentAlignment = Alignment.Center
             ) {
+                // Nanti ini bisa dikembangkan memanggil gambar dari bab.iconAssetName
                 Icon(
                     painter = painterResource(id = R.drawable.ic_launcher_foreground),
                     contentDescription = null,
@@ -144,7 +150,6 @@ fun KuisCardGrid(
                 )
             }
 
-            // Bagian Teks
             Column(
                 modifier = Modifier
                     .weight(0.35f)
@@ -154,13 +159,16 @@ fun KuisCardGrid(
                 verticalArrangement = Arrangement.Center
             ) {
                 Text(
-                    text = bab.title,
+                    text = bab.title, // Ambil judul dari kolom "title" di Room DB
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF0D47A1) // Biru tua
+                    color = Color(0xFF0D47A1),
+                    textAlign = TextAlign.Center,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
                 Text(
-                    text = bab.description,
+                    text = "Latihan Interaktif", // Fallback deskripsi statis karena tabel kuis kita tidak ada kolom deskripsi
                     fontSize = 14.sp,
                     color = Color.Gray,
                     textAlign = TextAlign.Center,

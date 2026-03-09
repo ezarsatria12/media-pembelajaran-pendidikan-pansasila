@@ -44,7 +44,7 @@ fun DetailMateriScreen(
     ) {
         // --- 1. BACKGROUND PERMAINAN ---
         Image(
-            painter = painterResource(id = R.drawable.bg_menu),
+            painter = painterResource(id = R.drawable.bg_materi),
             contentDescription = "Background Detail",
             contentScale = ContentScale.Crop,
             modifier = Modifier.fillMaxSize()

@@ -29,8 +29,8 @@ fun MainKuisScreen(
     onBackClick: () -> Unit
 ) {
     // Dummy Data Sementara untuk Tampilan Visual
-    val daftarTarget = listOf("Sila 1", "Sila 2", "Sila 3")
-    val daftarPilihan = listOf("Bintang", "Rantai", "Pohon Beringin")
+    val daftarTarget = listOf("Sila 1","Sila 1","Sila 1","Sila 1", "Sila 2", "Sila 3")
+    val daftarPilihan = listOf("Bintang","Bintang","Bintang","Bintang", "Rantai", "Pohon Beringin")
 
     Box(modifier = Modifier.fillMaxSize()) {
         // --- 1. BACKGROUND ---

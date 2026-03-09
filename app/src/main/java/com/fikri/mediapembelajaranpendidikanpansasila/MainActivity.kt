@@ -22,7 +22,9 @@ import com.fikri.mediapembelajaranpendidikanpansasila.ui.screens.DetailMateriScr
 import com.fikri.mediapembelajaranpendidikanpansasila.ui.screens.MainMenuScreen
 import com.fikri.mediapembelajaranpendidikanpansasila.ui.screens.MateriScreen
 import com.fikri.mediapembelajaranpendidikanpansasila.ui.screens.KuisScreen
-import com.fikri.mediapembelajaranpendidikanpansasila.ui.screens.MainKuisScreen
+import com.fikri.mediapembelajaranpendidikanpansasila.ui.screens.MainKuisScreen2
+import com.fikri.mediapembelajaranpendidikanpansasila.ui.screens.UjianScreen
+import com.fikri.mediapembelajaranpendidikanpansasila.ui.screens.MainUjianScreen
 import com.fikri.mediapembelajaranpendidikanpansasila.ui.theme.MediaPembelajaranPendidikanPansasilaTheme
 
 class MainActivity : ComponentActivity() {
@@ -58,7 +60,7 @@ class MainActivity : ComponentActivity() {
                             MainMenuScreen(
                                 onNavigateToMateri = { navController.navigate("materi") },
                                 onNavigateToQuiz = { navController.navigate("kuis") },
-                                onNavigateToUjian = { /* Nanti: navController.navigate("ujian") */ }
+                                onNavigateToUjian = { navController.navigate("ujian") }
                             )
                         }
 
@@ -105,8 +107,24 @@ class MainActivity : ComponentActivity() {
                             // Tangkap ID Kuis yang dikirim
                             val kuisId = backStackEntry.arguments?.getString("kuisId") ?: ""
 
-                            MainKuisScreen(
+                            MainKuisScreen2(
                                 kuisId = kuisId,
+                                onBackClick = { navController.popBackStack() }
+                            )
+                        }
+                        composable("ujian") {
+                            UjianScreen(
+                                onBackClick = { navController.popBackStack() },
+                                onUjianClick = { ujianId ->
+                                    // Nanti saat di-klik, pindah ke layar Pilihan Ganda
+                                     navController.navigate("main_ujian/$ujianId")
+                                }
+                            )
+                        }
+                        composable("main_ujian/{ujianId}") { backStackEntry ->
+                            val ujianId = backStackEntry.arguments?.getString("ujianId") ?: ""
+                            MainUjianScreen(
+                                ujianId = ujianId,
                                 onBackClick = { navController.popBackStack() }
                             )
                         }
